@@ -20,7 +20,7 @@
 /*!
  * \file proposal.cc
  * \brief
- * \author Piotr Teterwak, Bing Xu, Jian Guo
+ * \author Piotr Teterwak, Bing Xu, Jian Guo, Yuntao Chen
 */
 
 #include "./proposal-inl.h"
@@ -323,7 +323,7 @@ class ProposalOp : public Operator{
     int rpn_post_nms_top_n = std::min(param_.rpn_post_nms_top_n, rpn_pre_nms_top_n);
 
     int workspace_size = nbatch * (count * 5 + 2 * count + rpn_pre_nms_top_n * 5 + 3 * rpn_pre_nms_top_n);
-    Tensor<cpu, 1> workspace = ctx.requested[proposal::kTempResource].get_space<cpu>(
+    Tensor<cpu, 1> workspace = ctx.requested[proposal::kTempSpace].get_space<cpu>(
       Shape1(workspace_size), s);
     int start = 0;
     Tensor<cpu, 3> workspace_proposals(workspace.dptr_ + start, Shape3(nbatch, count, 5));

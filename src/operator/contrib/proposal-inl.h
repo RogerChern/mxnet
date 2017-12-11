@@ -20,7 +20,7 @@
 /*!
  * \file proposal-inl.h
  * \brief Proposal Operator
- * \author Piotr Teterwak, Bing Xu, Jian Guo, Pengfei Chen
+ * \author Piotr Teterwak, Bing Xu, Jian Guo, Pengfei Chen, Yuntao Chen
 */
 #ifndef MXNET_OPERATOR_CONTRIB_PROPOSAL_INL_H_
 #define MXNET_OPERATOR_CONTRIB_PROPOSAL_INL_H_
@@ -134,7 +134,7 @@ namespace op {
 namespace proposal {
 enum ProposalOpInputs {kClsProb, kBBoxPred, kImInfo};
 enum ProposalOpOutputs {kOut, kScore};
-enum ProposalForwardResource {kTempResource};
+enum ProposalForwardResource {kTempSpace};
 }  // proposal
 
 struct ProposalParam : public dmlc::Parameter<ProposalParam> {
@@ -147,6 +147,8 @@ struct ProposalParam : public dmlc::Parameter<ProposalParam> {
   int feature_stride;
   bool output_score;
   bool iou_loss;
+  uint64_t workspace;
+
   DMLC_DECLARE_PARAMETER(ProposalParam) {
     float tmp[] = {0, 0, 0, 0};
     DMLC_DECLARE_FIELD(rpn_pre_nms_top_n).set_default(6000)
@@ -171,6 +173,8 @@ struct ProposalParam : public dmlc::Parameter<ProposalParam> {
     .describe("Add score to outputs");
     DMLC_DECLARE_FIELD(iou_loss).set_default(false)
     .describe("Usage of IoU Loss");
+    DMLC_DECLARE_FIELD(workspace).set_default(256)
+    .describe("Workspace for proposal in MB, default to 256");
   }
 };
 
@@ -294,8 +298,7 @@ inline void _Transform(float scale,
   float new_w = std::floor(std::sqrt(size_ratios) + 0.5f) * scale;
   float new_h = std::floor((new_w / scale * ratio) + 0.5f) * scale;
 
-  _MakeAnchor(new_w, new_h, x_ctr,
-             y_ctr, out_anchors);
+  _MakeAnchor(new_w, new_h, x_ctr, y_ctr, out_anchors);
 }
 
 // out_anchors must have shape (n, 5), where n is ratios.size() * scales.size()
