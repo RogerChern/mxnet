@@ -108,7 +108,7 @@ class CuDNNAlgoReg {
                 const CuDNNAlgo<cudnnConvolutionBwdDataAlgo_t> &bwd,
                 const CuDNNAlgo<cudnnConvolutionBwdFilterAlgo_t> &flt) {
     std::lock_guard<std::mutex> guard(lock_);
-    if (reg_.size() % 50 == 0) {
+    if (dmlc::GetEnv("MXNET_CUDNN_AUTOTUNE_DEFAULT", 1) && reg_.size() % 50 == 0) {
       LOG(INFO) << "Running performance tests to find the best convolution "
                    "algorithm, "
                    "this can take a while... (setting env variable "
